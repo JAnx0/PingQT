@@ -1,5 +1,6 @@
-
+*__pycache__
 __pycache__/ui.cpython-39.pyc
+*.idea
 .idea/PingQT.iml
 .idea/modules.xml
 .idea/misc.xml
