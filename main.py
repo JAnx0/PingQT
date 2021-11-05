@@ -8,6 +8,8 @@ def main():
     # Initialise App
     app = QApplication(argv)
     app.setWindowIcon(QIcon("assets/img/qt-icon.png"))
+    app.setApplicationVersion("1.0.0")
+    app.setApplicationName("Qt-Ping")
 
     # Create Window
     w = Window()
