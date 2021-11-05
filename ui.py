@@ -3,6 +3,7 @@ import sys
 from shlex import split
 from subprocess import check_output
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -21,6 +22,17 @@ class Log(object):
         self.out.flush()
 
 
+class CSlider(QSlider):
+    def __init__(self, default, parent=None):
+        super(CSlider, self).__init__(parent)
+        self.setOrientation(Qt.Horizontal)
+        self.setMinimum(0)
+        self.default = default
+
+    def mouseDoubleClickEvent(self, a0: QtGui.QMouseEvent) -> None:
+        self.setValue(self.default)
+
+
 class Window(QWidget):
     # Constants
     DEBUG: bool = False
@@ -28,7 +40,7 @@ class Window(QWidget):
     IS_WINDOWS_HOST: bool = False
     PACKET_COUNT: int = DEFAULT_PACKET_COUNT
     TARGET: str = u"google.com"
-    WINDOW_HEIGHT: int = 500
+    WINDOW_HEIGHT: int = 520
     WINDOW_WIDTH: int = 580
     WINDOW_TITLE: str = u"Ping"
 
@@ -60,6 +72,24 @@ class Window(QWidget):
         # if QT_CONFIG(tooltip)
         applicationForm.setToolTip(u"")
         # endif // QT_CONFIG(tooltip)
+
+        exitAction = QAction(applicationForm)
+        exitAction.setStatusTip(u"Exit")
+        exitAction.setText(u"Exit")
+        exitAction.setIcon(QIcon("assets/img/exit-icon.png"))
+        exitAction.triggered.connect(self.close)
+
+        showInfoAction = QAction(applicationForm)
+        showInfoAction.setStatusTip(u"Show Info")
+        showInfoAction.setText(u"Info")
+        showInfoAction.triggered.connect(self.showInfo)
+
+        menubar = QMenuBar(applicationForm)
+        fileMenu = menubar.addMenu(QCoreApplication.translate("applicationForm", u"&File", None))
+        fileMenu.addAction(exitAction)
+        infoMenu = menubar.addAction(showInfoAction)
+
+
         self.ipAddressEdit = QLineEdit(applicationForm)
         self.ipAddressEdit.setObjectName(u"ipAddressEdit")
         self.ipAddressEdit.setGeometry(QRect(180, 30, 221, 21))
@@ -79,9 +109,9 @@ class Window(QWidget):
         self.packetCountLabel.setObjectName(u"packetCountLabel")
         self.packetCountLabel.setGeometry(QRect(20, 90, 131, 31))
         font = QFont()
-        font.setPointSize(19)
+        font.setPointSize(14)
         self.packetCountLabel.setFont(font)
-        self.packetCountSlider = QSlider(applicationForm)
+        self.packetCountSlider = CSlider(default=self.DEFAULT_PACKET_COUNT, parent=applicationForm)
         self.packetCountSlider.setObjectName(u"packetCountSlider")
         self.packetCountSlider.setGeometry(QRect(20, 130, 251, 31))
         self.packetCountSlider.setCursor(QCursor(Qt.OpenHandCursor))
@@ -106,7 +136,7 @@ class Window(QWidget):
         self.startPingButton.setObjectName(u"startPingButton")
         self.startPingButton.setGeometry(QRect(290, 90, 271, 71))
         font1 = QFont()
-        font1.setPointSize(30)
+        font1.setPointSize(25)
         self.startPingButton.setFont(font1)
         self.startPingButton.setCursor(QCursor(Qt.PointingHandCursor))
 
@@ -151,6 +181,9 @@ class Window(QWidget):
         self.startPingButton.setText(QCoreApplication.translate("applicationForm", u"PING!", None))
 
     # Slot Functions
+    def showInfo(self):
+        QMessageBox.information(self, self.WINDOW_TITLE, "Ping GUI\n(c) by JAnx0, 2021")
+
     def setDefaultPacketCount(self):
         self.packetCountSlider.setValue(self.DEFAULT_PACKET_COUNT)
 
@@ -168,7 +201,8 @@ class Window(QWidget):
 
     def setWindowsHostStatus(self):
         self.IS_WINDOWS_HOST = not self.IS_WINDOWS_HOST
-        print(f"{self.ERROR} Windows has ICMP disabled by default. Ping may not work.")
+        if self.IS_WINDOWS_HOST:
+            print(f"{self.ERROR} Windows has ICMP disabled by default. Ping may not work.")
         if self.DEBUG:
             print(f"{self.INFO} Windows host: {self.IS_WINDOWS_HOST}")
 
@@ -180,11 +214,9 @@ class Window(QWidget):
     def startPing(self):
         self.outputEdit.clear()
 
-        print(f"{self.STEP} Starting Ping.")
-
         ping_command = f"ping -c {self.PACKET_COUNT} {self.TARGET}"
 
-        print(f"{self.STEP} Sending {self.PACKET_COUNT} ICMP Packets to Target ({self.TARGET}):")
+        print(f"{self.STEP} Starting. Sending {self.PACKET_COUNT} ICMP Packets to Target ({self.TARGET})")
 
         try:
             print(check_output(split(ping_command)).decode())
