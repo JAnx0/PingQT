@@ -6,3 +6,4 @@ __pycache__/ui.cpython-39.pyc
 .idea/misc.xml
 .idea/inspectionProfiles/Project_Default.xml
 .idea/inspectionProfiles/profiles_settings.xml
+.DS_Store
